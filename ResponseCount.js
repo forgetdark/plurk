@@ -60,11 +60,13 @@ javascript:(function(){
             for (var i=0; i<result[key]['content'].length; i++) {
               var bg = '';
               if (i%2==0) {
-                bg = '#EEE';
+                bg = '#EEE;';
               } else {
-                bg = '#FFF';
+                bg = '#FFF;';
               }
-              $('#result_info').append('<div style="padding: 5px; background:'+bg+'">'+result[key]['content'][i]+'</div>');
+              var subStr = new RegExp('\n','ig');
+              var str = result[key]['content'][i];
+              $('#result_info').append('<div style="padding: 5px; background:'+bg+'">'+str.replace(subStr, '<br>')+'</div>');
             }
           }
         });
