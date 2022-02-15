@@ -99,6 +99,8 @@ javascript:(function(){
             searchResult.push('<div style="padding: 5px; background:'+bg+'">' + str.replace(subStr, '<br>') + '</div>');
           }
           document.getElementById('result-info').innerHTML = searchResult.join('');
+        } else {
+          document.querySelector('.clear-btn').click();
         }
       });
 
@@ -107,7 +109,6 @@ javascript:(function(){
         document.getElementById('result-info').innerHTML = '';
         document.querySelector('.search-ipt').value = '';
         document.querySelector('.search-sel').value = '';
-        document.querySelector('.search-btn').click();
       });
 
       window.document.documentElement.scrollTop = 0;
