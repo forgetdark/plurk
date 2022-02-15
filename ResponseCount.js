@@ -1,84 +1,118 @@
 javascript:(function(){
-  $('.load-all-older').click();
-  var flag = true;
-  var result = [];
-  var all_result;
-  do {
-    if ($('.load-older-holder').is(':hidden') && $('#result_info').length == 0) {
-      flag = false;
-      setTimeout(function(){
-        var content = [];
-        var arr = document.querySelectorAll('.text_holder');
-        arr.forEach(function(item, index) {
-          content[index] = item.innerText;
-        });
-        var arr = document.querySelectorAll('.name');
-        var total = 0;
-        arr.forEach(function(item, index) {
-          var text = item.innerText;
-          if (typeof result[text] == 'undefined') {
-            result[text] = {
-              'name': text,
-              'count': 0,
-              'content': []
-            };
-            total++;
-          }
-          result[text]['count']++;
-          result[text]['content'][result[text]['count'] - 1] = content[index];
-        });
-        $('.response_info').append('<div class="result_count" style="padding: 5px; margin: 5px;"></div>');
-        $('.response_info').append('<div class="result_info"><select class="result_list" style="padding: 5px; margin: 5px;"><option value="">請選擇ID名稱</option></select><input type="search" list="search_list" name="search_key" style="padding: 5px; margin: 5px;" placeholder="請輸入ID名稱"><datalist id="search_list"></datalist><button type="button" class="search_result">搜尋</button><button type="button" class="clear_result" style="margin-left: 5px;">清除結果</button><div id="result_info" style="padding: 5px; margin: 5px;"></div></div>');
-        total--;
-        $('.result_count').html('<b>實際回應人數(不含噗主)：</b>'+total);
-        all_result = Object.values(result).sort(function (a, b) {
-          return a.count > b.count ? 1 : -1;
-        }).reverse();
-        var sl = document.getElementById('search_list');
-        all_result.forEach(function(item, index) {
-          $('.result_info select').append('<option value="'+item.name+'">'+item.name+'('+item.count+')'+'</option>');
-          var op = document.createElement('option');
-          op.setAttribute('value', item.name);
-          op.setAttribute('label', item.name+'('+item.count+')');
-          sl.appendChild(op);
-        });
-        console.log('載入完成');
-        window.document.documentElement.scrollTop = 0;
-        var rl = document.querySelector('.result_list');
-        rl.addEventListener('change', function (e) {
-          $('input[name=search_key]').val(e.target.value);
-          $('.search_result').click();
-        });
-        var search_btn = document.querySelector('.search_result');
-        search_btn.addEventListener('click', function (e) {
-          var key = $('input[name=search_key]').val();
-          $('.clear_result').click();
-          if (key != '') {
-            $('#result_info').append('<div><b>回應人：</b>'+result[key]['name']+'</div>');
-            $('#result_info').append('<div><b>回應次數：</b>'+result[key]['count']+'</div>');
-            $('#result_info').append('<div style="margin-bottom: 2px;"><b>回應內容：</b></div>');
-            for (var i=0; i<result[key]['content'].length; i++) {
-              var bg = '';
-              if (i%2==0) {
-                bg = '#EEE;';
-              } else {
-                bg = '#FFF;';
-              }
-              var subStr = new RegExp('\n','ig');
-              var str = result[key]['content'][i];
-              $('#result_info').append('<div style="padding: 5px; background:'+bg+'">'+str.replace(subStr, '<br>')+'</div>');
-            }
-          }
-        });
-        var clear_btn = document.querySelector('.clear_result');
-        clear_btn.addEventListener('click', function (e) {
-          $('#result_info').html('');
-          $('input[name=search_key]').val('');
-        });
-      },5000);
+  var $createResult = function (totalCount, allResult) {
+    var style = document.createElement('style');
+    style.innerHTML = `
+    .response_info { border-bottom: 1px solid #CCC; }
+    .response_info .result-count { padding: 5px; margin: 5px; }
+    .response_info .search-sel { padding: 5px; margin: 5px; }
+    .response_info .search-ipt { padding: 5px; margin: 5px; }
+    .response_info .result-info button { margin-left: 5px; }
+    .response_info #result-info { padding: 5px; margin: 5px; }
+    `;
+    document.body.appendChild(style);
+
+    var selectArray = [];
+    for (const [index, item] of Object.entries(allResult)) {
+      selectArray.push('<option value="' + item.name + '" label="' + item.name + '(' + item.count + ')' + '">' + item.name + '(' + item.count + ')' + '</option>');
     }
-    if ($('#result_info').length > 0) {
-      flag = false;
-    }
-  } while (flag);
+
+    var count = document.createElement('div');
+    count.classList.add('result-count');
+    count.innerHTML = '<b>實際回應人數(不含噗主)：</b>' + (totalCount - 1);
+    document.querySelector('.response_info').appendChild(count);
+
+    var info = document.createElement('div');
+    info.classList.add('result-info');
+    var infoHtml = [];
+    infoHtml.push('<select class="search-sel"><option value="" label="">請選擇ID名稱</option>' + selectArray.join('') + '</select>');
+    infoHtml.push('<input type="search" list="search-list" class="search-ipt" placeholder="請輸入ID名稱" />');
+    infoHtml.push('<datalist id="search-list">' + selectArray.join('') + '</datalist>');
+    infoHtml.push('<button type="button" class="search-btn">搜尋</button>');
+    infoHtml.push('<button type="button" class="clear-btn">清除結果</button>');
+    infoHtml.push('<div id="result-info"></div>');
+    info.innerHTML = infoHtml.join('');
+    document.querySelector('.response_info').appendChild(info);
+  };
+
+  var $getResponse = function () {
+    document.querySelector('.load-all-older').click();
+    return new Promise(function (resolve, reject) {
+      var startInterval = setInterval(function(){
+        var loadOlderHolder = document.querySelector('.load-older-holder');
+        if (loadOlderHolder.style.display === 'none') {
+          resolve(startInterval);
+        }
+      }, 1000);
+    });
+  };
+
+  if (document.querySelectorAll('#result-info').length == 0) {
+    $getResponse().then(function (startInterval) {
+      window.clearInterval(startInterval);
+
+      var content = [];
+      var list = document.querySelectorAll('.text_holder');
+      list.forEach(function(item, index) {
+        content[index] = item;
+      });
+
+      var nameList = document.querySelectorAll('.name');
+      var result = [];
+      var total = 0;
+      nameList.forEach(function(item, index) {
+        var name = item.innerText;
+        if (typeof result[name] == 'undefined') {
+          result[name] = {
+            'name': name,
+            'count': 0,
+            'content': []
+          };
+          total++;
+        }
+        result[name]['count']++;
+        result[name]['content'][result[name]['count'] - 1] = content[index];
+      });
+
+      $createResult(total, Object.values(result).sort(function (a, b) {
+        return a.count > b.count ? 1 : -1;
+      }).reverse());
+
+      var searchSel = document.querySelector('.search-sel');
+      searchSel.addEventListener('change', function (e) {
+        document.querySelector('.search-ipt').value = e.target.value;
+        document.querySelector('.search-btn').click();
+      });
+
+      var searchBtn = document.querySelector('.search-btn');
+      searchBtn.addEventListener('click', function (e) {
+        var key = document.querySelector('.search-ipt').value;
+        document.querySelector('.search-sel').value = key;
+        if (key != '') {
+          var searchResult = [];
+          searchResult.push('<div><b>回應人：</b>' + result[key]['name'] + '</div>');
+          searchResult.push('<div><b>回應次數：</b>' + result[key]['count'] + '</div>');
+          searchResult.push('<div style="margin-bottom: 2px;"><b>回應內容：</b></div>');
+          for (var i=0; i<result[key]['content'].length; i++) {
+            var bg = (i%2==0) ? '#EEE;' : '#FFF;';
+            var subStr = new RegExp('\n','ig');
+            var str = result[key]['content'][i].innerText;
+            searchResult.push('<div style="padding: 5px; background:'+bg+'">' + str.replace(subStr, '<br>') + '</div>');
+          }
+          document.getElementById('result-info').innerHTML = searchResult.join('');
+        } else {
+          document.querySelector('.clear-btn').click();
+        }
+      });
+
+      var clearBtn = document.querySelector('.clear-btn');
+      clearBtn.addEventListener('click', function (e) {
+        document.getElementById('result-info').innerHTML = '';
+        document.querySelector('.search-ipt').value = '';
+        document.querySelector('.search-sel').value = '';
+        document.querySelector('.search-btn').click();
+      });
+
+      window.document.documentElement.scrollTop = 0;
+    });
+  }
 })();
