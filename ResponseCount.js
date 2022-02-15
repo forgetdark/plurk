@@ -99,8 +99,6 @@ javascript:(function(){
             searchResult.push('<div style="padding: 5px; background:'+bg+'">' + str.replace(subStr, '<br>') + '</div>');
           }
           document.getElementById('result-info').innerHTML = searchResult.join('');
-        } else {
-          document.querySelector('.clear-btn').click();
         }
       });
 
