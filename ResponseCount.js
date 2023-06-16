@@ -45,7 +45,7 @@ javascript:(function(){
     return new Promise(function (resolve, reject) {
       var startInterval = setInterval(function(){
         var loadOlderHolder = document.querySelector('.load-older-holder');
-        if (loadOlderHolder.style.display === 'none') {
+        if (loadOlderHolder.classList.value.indexOf('hide') > 0) {
           resolve(startInterval);
         }
       }, 1000);
