@@ -45,7 +45,7 @@ javascript:(function(){
       var loadOlderHolder = document.querySelector('.load-older-holder');
       var loadButton = document.querySelector('.button.load-older');
       if (!loadOlderHolder || loadOlderHolder.classList.contains('hide') || !loadButton) {
-        console.log('✅ 已載入全部留言');
+        console.log('已載入全部留言');
         break;
       }
       loadButton.click();
