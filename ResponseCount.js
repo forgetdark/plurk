@@ -40,16 +40,26 @@ javascript:(function(){
     document.querySelector('.response_info').appendChild(info);
   };
 
-  var $getResponse = function () {
-    document.querySelector('.button.load-older').click();
-    return new Promise(function (resolve, reject) {
-      var startInterval = setInterval(function(){
-        var loadOlderHolder = document.querySelector('.load-older-holder');
-        if (loadOlderHolder.classList.value.indexOf('hide') > 0) {
-          resolve(startInterval);
-        }
-      }, 1000);
-    });
+  var $getResponse = async function () {
+    while (true) {
+      var loadOlderHolder = document.querySelector('.load-older-holder');
+      var loadButton = document.querySelector('.button.load-older');
+      if (!loadOlderHolder || loadOlderHolder.classList.contains('hide') || !loadButton) {
+        console.log('✅ 已載入全部留言');
+        break;
+      }
+      loadButton.click();
+      await new Promise((resolve) => {
+        var checkInterval = setInterval(() => {
+          var isLoading = !loadOlderHolder.querySelector('.loading').classList.contains('hide');
+          if (!isLoading) {
+            clearInterval(checkInterval);
+            resolve();
+          }
+        }, 500);
+      });
+      await new Promise(r => setTimeout(r, 300));
+    }
   };
 
   if (document.querySelectorAll('#result-info').length == 0) {
