@@ -41,7 +41,7 @@ javascript:(function(){
   };
 
   var $getResponse = function () {
-    document.querySelector('.load-all-older').click();
+    document.querySelector('.button.load-older').click();
     return new Promise(function (resolve, reject) {
       var startInterval = setInterval(function(){
         var loadOlderHolder = document.querySelector('.load-older-holder');
